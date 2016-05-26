@@ -12,24 +12,26 @@ import com.example.qualson_kjy.search.R;
 import com.example.qualson_kjy.search.model.Image;
 import com.example.qualson_kjy.search.view.fragments.ImageFragment;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ViewById;
+
 import java.util.ArrayList;
 
+@EActivity(R.layout.activity_image)
 public class ImageActivity extends AppCompatActivity {
 
-    private ViewPager viewPager;
+    @ViewById(R.id.image_viewpager)
+    protected ViewPager viewPager;
+
     private PagerAdapter pagerAdapter;
     private ArrayList<Image> imageList;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_image);
-
+    @AfterViews
+    protected void init() {
         Intent i = getIntent();
         int pageInt = i.getIntExtra(ImageFragment.PAGE, -1);
         imageList = (ArrayList<Image>) i.getSerializableExtra(ImageFragment.LIST);
-
-        viewPager = (ViewPager) findViewById(R.id.image_viewpager);
         pagerAdapter = new PagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(pagerAdapter);
         viewPager.setCurrentItem(pageInt);

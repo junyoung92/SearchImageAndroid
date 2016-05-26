@@ -23,6 +23,10 @@ import com.example.qualson_kjy.search.model.ChannelRoot;
 import com.example.qualson_kjy.search.model.Image;
 import com.google.gson.Gson;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ViewById;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -30,25 +34,24 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+@EActivity(R.layout.activity_main)
 public class MainActivity extends AppCompatActivity implements MainPresenter.View, AbsListView.OnScrollListener {
 
-    private GridView gridView;
-    private MainAdapter mainAdapter;
-    private ProgressBar progressBar;
-    private ArrayList<Image> imageList;
+    @ViewById(R.id.main_gv)
+    protected GridView gridView;
 
+    @ViewById(R.id.main_progress)
+    protected ProgressBar progressBar;
+
+    private MainAdapter mainAdapter;
+    private ArrayList<Image> imageList;
     private int count;
     private MainPresenter mainPresenter = new MainPresenter();
     private String keyword;
     private boolean state;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        progressBar = (ProgressBar) findViewById(R.id.main_progress);
-        gridView = (GridView) findViewById(R.id.main_gv);
+    @AfterViews
+    protected void init() {
         gridView.setOnScrollListener(this);
         imageList = new ArrayList<>();
         mainAdapter = new MainAdapter(this, imageList);

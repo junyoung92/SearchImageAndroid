@@ -13,6 +13,7 @@ import android.widget.ImageView;
 
 import com.example.qualson_kjy.search.R;
 import com.example.qualson_kjy.search.model.Image;
+import com.example.qualson_kjy.search.view.activities.ImageActivity_;
 import com.example.qualson_kjy.search.view.fragments.ImageFragment;
 import com.example.qualson_kjy.search.view.activities.ImageActivity;
 
@@ -109,7 +110,7 @@ public class MainAdapter extends BaseAdapter {
         viewHolder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(context, ImageActivity.class);
+                Intent i = new Intent(context, ImageActivity_.class);
                 int page = imageList.get(position).getPage();
                 i.putExtra(ImageFragment.PAGE, page);
                 i.putExtra(ImageFragment.LIST, imageList);
