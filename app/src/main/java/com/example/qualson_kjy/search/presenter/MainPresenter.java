@@ -1,28 +1,28 @@
 package com.example.qualson_kjy.search.presenter;
 
-import android.os.AsyncTask;
-import android.util.Log;
-
 import com.example.qualson_kjy.search.model.ChannelItem;
 import com.example.qualson_kjy.search.model.ChannelRoot;
 import com.example.qualson_kjy.search.model.Image;
-import com.google.gson.Gson;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Qualson_KJY on 2016-05-09.
- */
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.GET;
+import retrofit2.http.Query;
+import rx.Observable;
+import rx.Subscriber;
+import rx.functions.Action1;
+
 public class MainPresenter implements BasePresenter {
 
-    private String sUrl1 = "https://apis.daum.net/search/image?apikey=b1287d92732e330277cf287f6b64f748&q=";
-    private String sUrl2 = "&output=json&pageno=";
-    private String sUrl3 = "&result=20";
+    private final String API_KEY = "b1287d92732e330277cf287f6b64f748";
+    private final String JSON = "json";
+    private final int NUM = 20;
 
     private String keyword;
     private int count;
@@ -39,51 +39,63 @@ public class MainPresenter implements BasePresenter {
 
     @Override
     public void execute() {
-        new Parse().execute();
+        Observable.create(new Observable.OnSubscribe<Result>() {
+            @Override
+            public void call(final Subscriber<? super Result> subscriber) {
+                try {
+                    Retrofit retrofit = new Retrofit.Builder().baseUrl("https://apis.daum.net/search/").addConverterFactory(GsonConverterFactory.create()).build();
+                    ChannelRootService channelRootService = retrofit.create(ChannelRootService.class);
+                    Call<ChannelRoot> call = channelRootService.getChannel(API_KEY, keyword, JSON, count, NUM);
+                    call.enqueue(new Callback<ChannelRoot>() {
+                        @Override
+                        public void onResponse(Call<ChannelRoot> call, Response<ChannelRoot> response) {
+                            if (response.isSuccessful()) {
+                                List<ChannelItem> channelItem = response.body().getChannel().getItem();
+                                for (int i = 0; i < channelItem.size(); i++) {
+                                    imageList.add(new Image(page++, channelItem.get(i)));
+                                }
+                                subscriber.onNext(new MainPresenter.Result("SUCCESS", true));
+                            } else {
+                                subscriber.onNext(new MainPresenter.Result("FAIL", false));
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ChannelRoot> call, Throwable t) {
+                            subscriber.onNext(new MainPresenter.Result("FAIL", false));
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    subscriber.onNext(new MainPresenter.Result("FAIL", false));
+                }
+            }
+        }).subscribe(new Action1<Result>() {
+            @Override
+            public void call(Result result) {
+                if (result.success) {
+                    myView.success(imageList);
+                } else {
+                    myView.error(result.error);
+                }
+            }
+        });
     }
 
-    private class Parse extends AsyncTask<Void, Void, Result> {
-        @Override
-        protected Result doInBackground(Void... arg0) {
-            try {
-                StringBuffer stringBuffer = new StringBuffer();
-                stringBuffer.append(sUrl1);
-                stringBuffer.append(keyword);
-                stringBuffer.append(sUrl2);
-                stringBuffer.append(count);
-                stringBuffer.append(sUrl3);
+    public interface ChannelRootService {
+        @GET("image")
+        Call<ChannelRoot> getChannel(
+                @Query("apikey") String apikey,
+                @Query("q") String keyword,
+                @Query("output") String json,
+                @Query("pageno") int count,
+                @Query("result") int result);
+    }
 
-                URL url = new URL(stringBuffer.toString());
-                HttpURLConnection urlConnect = (HttpURLConnection) url.openConnection();
-                BufferedReader buffer = new BufferedReader(new InputStreamReader(urlConnect.getInputStream()));
-                StringBuffer sb = new StringBuffer();
-                String line;
+    public interface View {
+        void success(ArrayList<Image> imageList);
 
-                while ((line = buffer.readLine()) != null) {
-                    sb.append(line);
-                }
-
-                ChannelRoot channelRoot = new Gson().fromJson(sb.toString(), ChannelRoot.class);
-                List<ChannelItem> channelItem = channelRoot.getChannel().getItem();
-                for (int i = 0; i < channelItem.size(); i++) {
-                    imageList.add(new Image(page++, channelItem.get(i)));
-                    Log.i("Page", page + "");
-                }
-                return new MainPresenter.Result("SUCCESS", true);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return new MainPresenter.Result(e.getLocalizedMessage(), false);
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Result result) {
-            if (result.success) {
-                myView.success(imageList);
-            } else {
-                myView.error(result.error);
-            }
-        }
+        void error(String message);
     }
 
     public class Result {
@@ -94,11 +106,5 @@ public class MainPresenter implements BasePresenter {
             this.error = error;
             this.success = success;
         }
-    }
-
-    public interface View {
-        void success(ArrayList<Image> imageList);
-
-        void error(String message);
     }
 }

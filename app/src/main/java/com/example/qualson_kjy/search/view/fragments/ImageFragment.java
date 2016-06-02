@@ -1,9 +1,8 @@
 package com.example.qualson_kjy.search.view.fragments;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +13,10 @@ import com.example.qualson_kjy.search.R;
 import com.example.qualson_kjy.search.model.Image;
 import com.example.qualson_kjy.search.presenter.ImagePresenter;
 
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 
+import rx.Observable;
+import rx.functions.Action1;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
 public class ImageFragment extends Fragment implements ImagePresenter.View {
@@ -27,7 +25,6 @@ public class ImageFragment extends Fragment implements ImagePresenter.View {
     public static final String LIST = "LIST";
 
     private int mPageNumber;
-    private TextView textView;
     private ImageView imageView;
     private ArrayList<Image> imageList;
 
@@ -52,11 +49,15 @@ public class ImageFragment extends Fragment implements ImagePresenter.View {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_image, container, false);
-        textView = (TextView) rootView.findViewById(R.id.image_tv);
+        final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_image, container, false);
         imageView = (ImageView) rootView.findViewById(R.id.image_iv);
 
-        textView.setText(imageList.get(mPageNumber).getTitle());
+        Observable.just(imageList.get(mPageNumber).getTitle()).subscribe(new Action1<String>() {
+            @Override
+            public void call(String s) {
+                ((TextView) rootView.findViewById(R.id.image_tv)).setText(s);
+            }
+        });
 
         imagePresenter.initialize(ImageFragment.this, imageList.get(mPageNumber).getImage());
         imagePresenter.execute();
