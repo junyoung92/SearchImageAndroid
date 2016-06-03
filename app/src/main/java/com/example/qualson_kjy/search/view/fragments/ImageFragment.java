@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.qualson_kjy.search.R;
 import com.example.qualson_kjy.search.model.Image;
@@ -16,7 +17,6 @@ import com.example.qualson_kjy.search.presenter.ImagePresenter;
 import java.util.ArrayList;
 
 import rx.Observable;
-import rx.functions.Action1;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
 public class ImageFragment extends Fragment implements ImagePresenter.View {
@@ -52,12 +52,19 @@ public class ImageFragment extends Fragment implements ImagePresenter.View {
         final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_image, container, false);
         imageView = (ImageView) rootView.findViewById(R.id.image_iv);
 
-        Observable.just(imageList.get(mPageNumber).getTitle()).subscribe(new Action1<String>() {
-            @Override
-            public void call(String s) {
-                ((TextView) rootView.findViewById(R.id.image_tv)).setText(s);
-            }
-        });
+//        Observable.just(imageList.get(mPageNumber).getTitle()).subscribe(new Action1<String>() {
+//            @Override
+//            public void call(String s) {
+//                ((TextView) rootView.findViewById(R.id.image_tv)).setText(s);
+//            }
+//        });
+
+//        Observable.just(imageList.get(mPageNumber).getTitle()).subscribe((string) -> {
+//            ((TextView) rootView.findViewById(R.id.image_tv)).setText(string);
+//        });
+
+        Observable.just(imageList.get(mPageNumber).getTitle()).subscribe(string -> ((TextView) rootView.findViewById(R.id.image_tv)).setText(string));
+        (rootView.findViewById(R.id.image_tv)).setOnClickListener(v -> Toast.makeText(getActivity(), imageList.get(mPageNumber).getTitle(), Toast.LENGTH_LONG).show());
 
         imagePresenter.initialize(ImageFragment.this, imageList.get(mPageNumber).getImage());
         imagePresenter.execute();
@@ -70,4 +77,6 @@ public class ImageFragment extends Fragment implements ImagePresenter.View {
         imageView.setImageBitmap(bitmap);
         new PhotoViewAttacher(imageView);
     }
+
+
 }

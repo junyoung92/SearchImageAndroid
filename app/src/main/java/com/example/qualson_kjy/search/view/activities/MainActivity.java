@@ -4,6 +4,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,11 +25,15 @@ import org.androidannotations.annotations.ViewById;
 import java.util.ArrayList;
 
 import rx.Observable;
+import rx.Subscriber;
+import rx.android.widget.WidgetObservable;
 import rx.functions.Action1;
+import rx.functions.Func0;
+import rx.functions.Func1;
 import rx.subjects.PublishSubject;
 
 @EActivity(R.layout.activity_main)
-public class MainActivity extends AppCompatActivity implements MainPresenter.View {//}, AbsListView.OnScrollListener {
+public class MainActivity extends AppCompatActivity implements MainPresenter.View {
 
     @ViewById(R.id.main_gv)
     protected GridView gridView;
@@ -49,13 +54,10 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         mainAdapter = new MainAdapter(this, imageList);
         count = 1;
 
-        scrollObservable(gridView).subscribe(new Action1<Boolean>() {
-            @Override
-            public void call(Boolean state) {
-                if (state) {
-                    count++;
-                    apiCall();
-                }
+        scrollObservable(gridView).subscribe(state -> {
+            if (state) {
+                count++;
+                apiCall();
             }
         });
     }
@@ -68,19 +70,16 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
-        searchObservable(searchView).subscribe(new Action1<String>() {
-            @Override
-            public void call(String s) {
-                gridView.setAdapter(mainAdapter);
-                SearchFilter(s);
-                progressBar.setVisibility(View.VISIBLE);
-            }
+        searchObservable(searchView).subscribe(string -> {
+            gridView.setAdapter(mainAdapter);
+            SearchFilter(string);
+            progressBar.setVisibility(View.VISIBLE);
         });
-
         return true;
     }
 
-    private Observable scrollObservable(AbsListView absListView) {
+
+    private Observable<Boolean> scrollObservable(AbsListView absListView) {
         final PublishSubject publishSubject = PublishSubject.create();
         absListView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -98,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         return publishSubject;
     }
 
-    private Observable searchObservable(SearchView searchView) {
+    private Observable<String> searchObservable(SearchView searchView) {
         final PublishSubject publishSubject = PublishSubject.create();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -128,7 +127,8 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         count = 1;
         imageList.clear();
         keyword = charText;
-        if (charText.length() != 0) {
+
+        if (keyword.length() != 0) {
             apiCall();
         }
     }
@@ -151,42 +151,4 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
         progressBar.setVisibility(View.INVISIBLE);
     }
-
-
-//    @Override
-//    public void onScrollStateChanged(AbsListView view, int scrollState) {
-//        if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE && state) {
-//            count++;
-//            apiCall();
-//        }
-//    }
-//
-//    @Override
-//    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-//        state = (totalItemCount > 0) && (firstVisibleItem + visibleItemCount) >= totalItemCount;
-//
-//    }
-
-
-//    private void d() {
-//
-//        WidgetObservable.listScrollEvents(gridView).subscribe(new Action1<OnListViewScrollEvent>() {
-//            @Override
-//            public void call(OnListViewScrollEvent onListViewScrollEvent) {
-//                state = (onListViewScrollEvent.totalItemCount() > 0) && (onListViewScrollEvent.firstVisibleItem() + onListViewScrollEvent.visibleItemCount()) >= onListViewScrollEvent.totalItemCount();
-//                Log.d("listScroll", state + "   " + onListViewScrollEvent.toString());
-//
-//                if (onListViewScrollEvent.scrollState() == SCROLL_STATE_IDLE && state) {
-//                    count++;
-//                    apiCall();
-//
-//                }
-//            }
-//        }, new Action1<Throwable>() {
-//            @Override
-//            public void call(Throwable throwable) {
-//                Log.d("listScroll", "------------------" + state + "  " + throwable.toString());
-//            }
-//        });
-//    }
 }

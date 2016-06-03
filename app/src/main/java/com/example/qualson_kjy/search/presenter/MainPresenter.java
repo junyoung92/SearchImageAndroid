@@ -1,11 +1,10 @@
 package com.example.qualson_kjy.search.presenter;
 
-import com.example.qualson_kjy.search.model.ChannelItem;
 import com.example.qualson_kjy.search.model.ChannelRoot;
+import com.example.qualson_kjy.search.model.ChannelRootService;
 import com.example.qualson_kjy.search.model.Image;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -16,10 +15,11 @@ import retrofit2.http.GET;
 import retrofit2.http.Query;
 import rx.Observable;
 import rx.Subscriber;
-import rx.functions.Action1;
+import rx.android.widget.WidgetObservable;
 
 public class MainPresenter implements BasePresenter {
 
+    private final String BASE_URL = "https://apis.daum.net/search/";
     private final String API_KEY = "b1287d92732e330277cf287f6b64f748";
     private final String JSON = "json";
     private final int NUM = 20;
@@ -39,58 +39,52 @@ public class MainPresenter implements BasePresenter {
 
     @Override
     public void execute() {
-        Observable.create(new Observable.OnSubscribe<Result>() {
-            @Override
-            public void call(final Subscriber<? super Result> subscriber) {
-                try {
-                    Retrofit retrofit = new Retrofit.Builder().baseUrl("https://apis.daum.net/search/").addConverterFactory(GsonConverterFactory.create()).build();
-                    ChannelRootService channelRootService = retrofit.create(ChannelRootService.class);
-                    Call<ChannelRoot> call = channelRootService.getChannel(API_KEY, keyword, JSON, count, NUM);
-                    call.enqueue(new Callback<ChannelRoot>() {
-                        @Override
-                        public void onResponse(Call<ChannelRoot> call, Response<ChannelRoot> response) {
-                            if (response.isSuccessful()) {
-                                List<ChannelItem> channelItem = response.body().getChannel().getItem();
-                                for (int i = 0; i < channelItem.size(); i++) {
-                                    imageList.add(new Image(page++, channelItem.get(i)));
-                                }
-                                subscriber.onNext(new MainPresenter.Result("SUCCESS", true));
-                            } else {
-                                subscriber.onNext(new MainPresenter.Result("FAIL", false));
-                            }
+        Observable.create((final Subscriber<? super Result> subscriber) -> {
+            try {
+                Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
+                Call<ChannelRoot> call = retrofit.create(ChannelRootService.class).getChannel(API_KEY, keyword, JSON, count, NUM);
+                call.enqueue(new Callback<ChannelRoot>() {
+                    @Override
+                    public void onResponse(Call<ChannelRoot> call, Response<ChannelRoot> response) {
+                        if (response.isSuccessful()) {
+                            Observable.from(response.body().getChannel().getItem()).subscribe(channelItem -> imageList.add(new Image(page++, channelItem)));
+                            subscriber.onNext(new Result("SUCCESS", true));
+                        } else {
+                            subscriber.onNext(new Result("FAIL", false));
                         }
+//                                List<ChannelItem> channelItems = response.body().getChannel().getItem();
+//                                for (int i = 0; i < channelItems.size(); i++) {
+//                                    imageList.add(new Image(page++, channelItems.get(i)));
+//                                }
 
-                        @Override
-                        public void onFailure(Call<ChannelRoot> call, Throwable t) {
-                            subscriber.onNext(new MainPresenter.Result("FAIL", false));
-                        }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    subscriber.onNext(new MainPresenter.Result("FAIL", false));
-                }
+//                        if (response.isSuccessful()) {
+//                            for (ChannelItem channelItem : response.body().getChannel().getItem()) {
+//                                imageList.add(new Image(page++, channelItem));
+//                            }
+//                            subscriber.onNext(new Result("SUCCESS", true));
+//                        } else {
+//                            subscriber.onNext(new Result("FAIL", false));
+//                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ChannelRoot> call, Throwable t) {
+                        subscriber.onNext(new Result("FAIL", false));
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                subscriber.onNext(new Result("FAIL", false));
             }
-        }).subscribe(new Action1<Result>() {
-            @Override
-            public void call(Result result) {
-                if (result.success) {
-                    myView.success(imageList);
-                } else {
-                    myView.error(result.error);
-                }
+        }).subscribe(result -> {
+            if (result.success) {
+                myView.success(imageList);
+            } else {
+                myView.error(result.error);
             }
+
         });
     }
 
-    public interface ChannelRootService {
-        @GET("image")
-        Call<ChannelRoot> getChannel(
-                @Query("apikey") String apikey,
-                @Query("q") String keyword,
-                @Query("output") String json,
-                @Query("pageno") int count,
-                @Query("result") int result);
-    }
 
     public interface View {
         void success(ArrayList<Image> imageList);
