@@ -9,7 +9,6 @@ import java.net.URL;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func0;
 import rx.schedulers.Schedulers;
 
 public class ImagePresenter implements BasePresenter {
@@ -33,7 +32,8 @@ public class ImagePresenter implements BasePresenter {
             } catch (Exception e) {
                 subscriber.onError(e);
             }
-        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(bitmap -> myView.setImage(bitmap));
+//        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(bitmap -> myView.setImage(bitmap));
+        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(myView::setImage);
 
 //        final Handler handler = new Handler();
 //        new Thread(new Runnable() {
@@ -63,6 +63,22 @@ public class ImagePresenter implements BasePresenter {
 //            }
 //        }).start();
     }
+
+
+//    public Observable observable = Observable.create((Subscriber<? super Bitmap> subscriber) -> {
+//        try {
+//            HttpURLConnection conn = (HttpURLConnection) new URL(image).openConnection();
+//            conn.setDoInput(true);
+//            conn.connect();
+//            subscriber.onNext(BitmapFactory.decodeStream(conn.getInputStream()));
+//        } catch (Exception e) {
+//            subscriber.onError(e);
+//        }
+//    });
+//
+//    public Action1<Bitmap> subscriber = bitmap -> {
+//        myView.setImage(bitmap);
+//    };
 
     public interface View {
         void setImage(Bitmap bitmap);

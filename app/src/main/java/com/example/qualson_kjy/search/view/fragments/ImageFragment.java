@@ -63,11 +63,15 @@ public class ImageFragment extends Fragment implements ImagePresenter.View {
 //            ((TextView) rootView.findViewById(R.id.image_tv)).setText(string);
 //        });
 
-        Observable.just(imageList.get(mPageNumber).getTitle()).subscribe(string -> ((TextView) rootView.findViewById(R.id.image_tv)).setText(string));
+
+        Observable.just(imageList.get(mPageNumber).getTitle()).subscribe(((TextView) rootView.findViewById(R.id.image_tv))::setText);
+
+        // Observable.just(imageList.get(mPageNumber).getTitle()).subscribe(string -> ((TextView) rootView.findViewById(R.id.image_tv)).setText(string));
         (rootView.findViewById(R.id.image_tv)).setOnClickListener(v -> Toast.makeText(getActivity(), imageList.get(mPageNumber).getTitle(), Toast.LENGTH_LONG).show());
 
         imagePresenter.initialize(ImageFragment.this, imageList.get(mPageNumber).getImage());
         imagePresenter.execute();
+        // imagePresenter.observable.subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(imagePresenter.subscriber);
 
         return rootView;
     }

@@ -4,7 +4,6 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,11 +24,7 @@ import org.androidannotations.annotations.ViewById;
 import java.util.ArrayList;
 
 import rx.Observable;
-import rx.Subscriber;
-import rx.android.widget.WidgetObservable;
 import rx.functions.Action1;
-import rx.functions.Func0;
-import rx.functions.Func1;
 import rx.subjects.PublishSubject;
 
 @EActivity(R.layout.activity_main)
@@ -60,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
                 apiCall();
             }
         });
+
     }
 
     @Override
@@ -67,9 +63,8 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         getMenuInflater().inflate(R.menu.menu, menu);
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-
         searchObservable(searchView).subscribe(string -> {
             gridView.setAdapter(mainAdapter);
             SearchFilter(string);
@@ -80,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
 
 
     private Observable<Boolean> scrollObservable(AbsListView absListView) {
-        final PublishSubject publishSubject = PublishSubject.create();
+        PublishSubject publishSubject = PublishSubject.create();
         absListView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
@@ -98,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
     }
 
     private Observable<String> searchObservable(SearchView searchView) {
-        final PublishSubject publishSubject = PublishSubject.create();
+        PublishSubject publishSubject = PublishSubject.create();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -137,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         progressBar.setVisibility(View.VISIBLE);
         mainPresenter.initialize(MainActivity.this, keyword, count, imageList);
         mainPresenter.execute();
+       // mainPresenter.observable.subscribe(mainPresenter.subscriber);
     }
 
     @Override

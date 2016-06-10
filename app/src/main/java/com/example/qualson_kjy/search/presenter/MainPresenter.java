@@ -11,11 +11,9 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
-import retrofit2.http.Query;
 import rx.Observable;
 import rx.Subscriber;
-import rx.android.widget.WidgetObservable;
+import rx.functions.Action1;
 
 public class MainPresenter implements BasePresenter {
 
@@ -35,6 +33,7 @@ public class MainPresenter implements BasePresenter {
         this.keyword = keyword;
         this.count = count;
         this.imageList = imageList;
+
     }
 
     @Override
@@ -66,6 +65,7 @@ public class MainPresenter implements BasePresenter {
 //                            subscriber.onNext(new Result("FAIL", false));
 //                        }
                     }
+
                     @Override
                     public void onFailure(Call<ChannelRoot> call, Throwable t) {
                         subscriber.onNext(new Result("FAIL", false));
@@ -83,8 +83,43 @@ public class MainPresenter implements BasePresenter {
             }
 
         });
+
     }
 
+
+
+//    public Observable<Result> observable = Observable.create((Subscriber<? super Result> subscriber) -> {
+//        try {
+//            Retrofit retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
+//            Call<ChannelRoot> call = retrofit.create(ChannelRootService.class).getChannel(API_KEY, keyword, JSON, count, NUM);
+//            call.enqueue(new Callback<ChannelRoot>() {
+//                @Override
+//                public void onResponse(Call<ChannelRoot> call, Response<ChannelRoot> response) {
+//                    if (response.isSuccessful()) {
+//                        Observable.from(response.body().getChannel().getItem()).subscribe(channelItem -> imageList.add(new Image(page++, channelItem)));
+//                        subscriber.onNext(new Result("SUCCESS", true));
+//                    } else {
+//                        subscriber.onNext(new Result("FAIL", false));
+//                    }
+//                }
+//                @Override
+//                public void onFailure(Call<ChannelRoot> call, Throwable t) {
+//                    subscriber.onNext(new Result("FAIL", false));
+//                }
+//            });
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            subscriber.onNext(new Result("FAIL", false));
+//        }
+//    });
+//
+//    public Action1<Result> subscriber = result -> {
+//        if (result.success) {
+//            myView.success(imageList);
+//        } else {
+//            myView.error(result.error);
+//        }
+//    };
 
     public interface View {
         void success(ArrayList<Image> imageList);
