@@ -132,7 +132,6 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         progressBar.setVisibility(View.VISIBLE);
         mainPresenter.initialize(MainActivity.this, keyword, count, imageList);
         mainPresenter.execute();
-       // mainPresenter.observable.subscribe(mainPresenter.subscriber);
     }
 
     @Override

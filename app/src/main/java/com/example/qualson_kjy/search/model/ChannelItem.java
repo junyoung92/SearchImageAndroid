@@ -3,9 +3,6 @@ package com.example.qualson_kjy.search.model;
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * Created by Qualson_KJY on 2016-05-04.
- */
 public class ChannelItem implements Serializable {
     private String pubDate;
     private String title;

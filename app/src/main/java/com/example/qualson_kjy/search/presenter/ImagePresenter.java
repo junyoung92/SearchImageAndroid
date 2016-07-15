@@ -3,6 +3,8 @@ package com.example.qualson_kjy.search.presenter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import com.bumptech.glide.Glide;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -32,53 +34,9 @@ public class ImagePresenter implements BasePresenter {
             } catch (Exception e) {
                 subscriber.onError(e);
             }
-//        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(bitmap -> myView.setImage(bitmap));
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(myView::setImage);
 
-//        final Handler handler = new Handler();
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    final Bitmap bitmap;
-//                    URL url = new URL(image);
-//                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//                    conn.setDoInput(true);
-//                    conn.connect();
-//
-//                    InputStream is = conn.getInputStream();
-//                    bitmap = BitmapFactory.decodeStream(is);
-//
-//                    handler.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            myView.setImage(bitmap);
-//                        }
-//                    });
-//
-//
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }).start();
     }
-
-
-//    public Observable observable = Observable.create((Subscriber<? super Bitmap> subscriber) -> {
-//        try {
-//            HttpURLConnection conn = (HttpURLConnection) new URL(image).openConnection();
-//            conn.setDoInput(true);
-//            conn.connect();
-//            subscriber.onNext(BitmapFactory.decodeStream(conn.getInputStream()));
-//        } catch (Exception e) {
-//            subscriber.onError(e);
-//        }
-//    });
-//
-//    public Action1<Bitmap> subscriber = bitmap -> {
-//        myView.setImage(bitmap);
-//    };
 
     public interface View {
         void setImage(Bitmap bitmap);

@@ -66,26 +66,6 @@ public class MainAdapter extends BaseAdapter {
 
         imageList.get(position).setPage(position);
 
-//        Observable.create(new Observable.OnSubscribe<Bitmap>() {
-//            @Override
-//            public void call(Subscriber<? super Bitmap> subscriber) {
-//                try {
-//                    URL url = new URL(imageList.get(position).getThumbnail());
-//                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//                    conn.setDoInput(true);
-//                    conn.connect();
-//                    subscriber.onNext(BitmapFactory.decodeStream(conn.getInputStream()));
-//                } catch (Exception e) {
-//                    subscriber.onError(e);
-//                }
-//            }
-//        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<Bitmap>() {
-//            @Override
-//            public void call(Bitmap bitmap) {
-//                viewHolder.imageView.setImageBitmap(bitmap);
-//            }
-//        });
-
         Observable.create((Subscriber<? super String> subscriber) -> {
             subscriber.onNext(imageList.get(position).getThumbnail());
         }).map(string -> {
@@ -97,23 +77,7 @@ public class MainAdapter extends BaseAdapter {
             } catch (Exception e) {
                 return null;
             }
-//        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(bitmap -> viewHolder.imageView.setImageBitmap(bitmap));
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(viewHolder.imageView::setImageBitmap);
-
-//        Observable.defer(() -> Observable.just(imageList.get(position).getThumbnail())  //return
-//        ).map(string -> {
-//            try {
-//                HttpURLConnection conn = (HttpURLConnection) new URL(string).openConnection();
-//                conn.setDoInput(true);
-//                conn.connect();
-//                return BitmapFactory.decodeStream(conn.getInputStream());
-//            } catch (Exception e) {
-//                return null;
-//            }
-//        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(bitmap -> viewHolder.imageView.setImageBitmap(bitmap));
-
-
-        // clickObservable(viewHolder.imageView, position).subscribe(intent -> context.startActivity(intent));
 
         viewHolder.imageView.setOnClickListener(v -> {
             Intent i = new Intent(context, ImageActivity_.class);
@@ -124,17 +88,6 @@ public class MainAdapter extends BaseAdapter {
 
         return convertView;
     }
-
-//    private Observable<Intent> clickObservable(View view, final int position) {
-//        final PublishSubject publishSubject = PublishSubject.create();
-//        view.setOnClickListener(v -> {
-//            Intent i = new Intent(context, ImageActivity_.class);
-//            i.putExtra(ImageFragment.PAGE, imageList.get(position).getPage());
-//            i.putExtra(ImageFragment.LIST, imageList);
-//            publishSubject.onNext(i);
-//        });
-//        return publishSubject;
-//    }
 
     class ViewHolder {
         ImageView imageView;

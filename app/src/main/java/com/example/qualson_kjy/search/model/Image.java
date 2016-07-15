@@ -2,9 +2,6 @@ package com.example.qualson_kjy.search.model;
 
 import java.io.Serializable;
 
-/**
- * Created by Qualson_KJY on 2016-04-29.
- */
 public class Image implements Serializable {
 
     private int page;
